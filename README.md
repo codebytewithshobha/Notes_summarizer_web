@@ -1,1 +1,1 @@
-# Internship-task-ai-course-notes-summarizer
+# AI Course Notes Summarizer
