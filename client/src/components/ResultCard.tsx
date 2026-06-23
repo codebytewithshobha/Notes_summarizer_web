@@ -1,149 +1,230 @@
-import { NoteSummary } from '../types';
+import { useMemo, useState } from 'react';
+import { exportHistoryEntry, getApiErrorMessage } from '../services/api';
+import { Mcq, NoteSummary, Question, QuestionAnswer } from '../types';
 
 interface ResultCardProps {
   result: NoteSummary;
 }
 
-const escapePdfText = (value: string) =>
-  value.replace(/\\/g, '\\\\').replace(/\(/g, '\\(').replace(/\)/g, '\\)');
-
-const wrapLine = (line: string, maxLength = 88) => {
-  const words = line.split(/\s+/);
-  const lines: string[] = [];
-  let current = '';
-
-  words.forEach((word) => {
-    const next = current ? `${current} ${word}` : word;
-    if (next.length > maxLength && current) {
-      lines.push(current);
-      current = word;
-    } else {
-      current = next;
-    }
-  });
-
-  if (current) {
-    lines.push(current);
+const getQuestionTypeColor = (type: string) => {
+  switch (type) {
+    case 'short-answer': return 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30';
+    case 'long-answer': return 'bg-blue-500/20 text-blue-300 border-blue-500/30';
+    case 'mcq': return 'bg-violet-500/20 text-violet-300 border-violet-500/30';
+    case 'conceptual': return 'bg-amber-500/20 text-amber-300 border-amber-500/30';
+    default: return 'bg-slate-500/20 text-slate-300 border-slate-500/30';
   }
-
-  return lines;
 };
 
-const downloadSummaryPdf = (result: NoteSummary) => {
-  const sections = [
-    'AI Course Notes Summary',
-    result.createdAt ? `Generated: ${new Date(result.createdAt).toLocaleString()}` : '',
-    '',
-    'Summary',
-    result.summary,
-    '',
-    'Revision Questions',
-    ...result.questions.map((question, index) => `${index + 1}. ${question}`)
-  ].filter(Boolean);
-
-  const lines = sections.flatMap((section) => wrapLine(section));
-  const contentLines = ['BT', '/F1 12 Tf', '50 780 Td'];
-
-  lines.forEach((line, index) => {
-    if (index > 0) {
-      contentLines.push('0 -18 Td');
-    }
-    contentLines.push(`(${escapePdfText(line)}) Tj`);
-  });
-
-  contentLines.push('ET');
-
-  const stream = contentLines.join('\n');
-  const objects = [
-    '1 0 obj\n<< /Type /Catalog /Pages 2 0 R >>\nendobj',
-    '2 0 obj\n<< /Type /Pages /Kids [3 0 R] /Count 1 >>\nendobj',
-    '3 0 obj\n<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 4 0 R >> >> /Contents 5 0 R >>\nendobj',
-    '4 0 obj\n<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>\nendobj',
-    `5 0 obj\n<< /Length ${stream.length} >>\nstream\n${stream}\nendstream\nendobj`
-  ];
-
-  let pdf = '%PDF-1.4\n';
-  const offsets = [0];
-
-  objects.forEach((object) => {
-    offsets.push(pdf.length);
-    pdf += `${object}\n`;
-  });
-
-  const xrefOffset = pdf.length;
-  pdf += `xref\n0 ${objects.length + 1}\n`;
-  pdf += '0000000000 65535 f \n';
-  offsets.slice(1).forEach((offset) => {
-    pdf += `${String(offset).padStart(10, '0')} 00000 n \n`;
-  });
-  pdf += `trailer\n<< /Size ${objects.length + 1} /Root 1 0 R >>\nstartxref\n${xrefOffset}\n%%EOF`;
-
-  const blob = new Blob([pdf], { type: 'application/pdf' });
+const downloadBlob = (blob: Blob, filename: string) => {
   const url = URL.createObjectURL(blob);
   const link = document.createElement('a');
   link.href = url;
-  link.download = 'course-notes-summary.pdf';
+  link.download = filename;
   link.click();
   URL.revokeObjectURL(url);
 };
 
+const asShortQuestions = (questions: Question[] = []): QuestionAnswer[] =>
+  questions
+    .filter((question) => question.type === 'short-answer' || question.type === 'conceptual')
+    .map((question) => ({ question: question.question, answer: question.correctAnswer }));
+
+const asLongQuestions = (questions: Question[] = []): QuestionAnswer[] =>
+  questions
+    .filter((question) => question.type === 'long-answer')
+    .map((question) => ({ question: question.question, answer: question.correctAnswer }));
+
+const asMcqs = (questions: Question[] = []): Mcq[] =>
+  questions
+    .filter((question) => question.type === 'mcq')
+    .map((question) => ({
+      question: question.question,
+      options: question.options,
+      correctAnswer: question.correctAnswer
+    }));
+
 const ResultCard = ({ result }: ResultCardProps) => {
+  const [exportError, setExportError] = useState('');
+  const [exporting, setExporting] = useState<string | null>(null);
+
+  const shortQuestions = useMemo(
+    () => result.shortQuestions?.length ? result.shortQuestions : asShortQuestions(result.questions),
+    [result.shortQuestions, result.questions]
+  );
+  const longQuestions = useMemo(
+    () => result.longQuestions?.length ? result.longQuestions : asLongQuestions(result.questions),
+    [result.longQuestions, result.questions]
+  );
+  const mcqs = useMemo(
+    () => result.mcqs?.length ? result.mcqs : asMcqs(result.questions),
+    [result.mcqs, result.questions]
+  );
+
+  const handleExport = async (format: 'pdf' | 'docx' | 'txt') => {
+    if (!result._id) return;
+    try {
+      setExporting(format);
+      setExportError('');
+      const blob = await exportHistoryEntry(result._id, format);
+      const date = result.createdAt ? new Date(result.createdAt).toISOString().slice(0, 10) : 'latest';
+      downloadBlob(blob, `course-notes-summary-${date}.${format}`);
+    } catch (error) {
+      setExportError(getApiErrorMessage(error, `Unable to export ${format.toUpperCase()}.`));
+    } finally {
+      setExporting(null);
+    }
+  };
+
   return (
-    <div className="space-y-6 rounded-3xl border border-slate-800 bg-slate-900/80 p-6 shadow-xl shadow-slate-950/20">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-        <div className="space-y-3">
-          <h2 className="text-2xl font-semibold text-cyan-300">Structured Summary</h2>
-          <p className="whitespace-pre-wrap text-slate-100">{result.summary}</p>
+    <div className="space-y-6 rounded-2xl border border-slate-800 bg-slate-900/80 p-4 shadow-xl shadow-slate-950/20 sm:p-6">
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+        <div className="min-w-0 flex-1 space-y-3">
+          <div className="flex flex-wrap items-center gap-3">
+            <h2 className="text-2xl font-semibold text-cyan-300">Structured Summary</h2>
+            {result.uploadedFileName && (
+              <span className="max-w-full truncate rounded-full bg-slate-800 px-3 py-1 text-xs text-slate-400">
+                {result.uploadedFileName}
+              </span>
+            )}
+          </div>
+          <p className="whitespace-pre-wrap break-words text-slate-100">{result.summary}</p>
+          <div className="flex flex-wrap gap-4 text-xs text-slate-400">
+            {result.processingTime > 0 && <span>Processed in {(result.processingTime / 1000).toFixed(2)}s</span>}
+            {result.aiModelUsed && <span>Model: {result.aiModelUsed}</span>}
+            {result.createdAt && <span>{new Date(result.createdAt).toLocaleString()}</span>}
+          </div>
         </div>
-        <button
-          type="button"
-          onClick={() => downloadSummaryPdf(result)}
-          className="rounded-3xl border border-cyan-500/70 px-4 py-2 text-sm font-semibold text-cyan-200 transition hover:border-cyan-300 hover:text-cyan-100"
-        >
-          Download PDF
-        </button>
+
+        <div className="flex flex-wrap gap-2">
+          {(['pdf', 'docx', 'txt'] as const).map((format) => (
+            <button
+              key={format}
+              type="button"
+              onClick={() => handleExport(format)}
+              disabled={Boolean(exporting)}
+              className="rounded-2xl border border-cyan-500/70 px-4 py-2 text-sm font-semibold uppercase text-cyan-200 transition hover:border-cyan-300 hover:text-cyan-100 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              {exporting === format ? 'Exporting' : format}
+            </button>
+          ))}
+        </div>
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-3">
-        <div className="rounded-2xl border border-slate-800 bg-slate-950 p-4">
+      {exportError && <p className="rounded-2xl bg-rose-500/10 px-4 py-3 text-sm text-rose-300">{exportError}</p>}
+
+      <div className="grid gap-4 lg:grid-cols-2">
+        <section className="rounded-2xl border border-slate-800 bg-slate-950 p-4">
           <h3 className="text-lg font-semibold text-cyan-200">Key Concepts</h3>
           <ul className="mt-3 space-y-2 text-slate-200">
-            {result.keyConcepts.length > 0 ? (
-              result.keyConcepts.map((concept, index) => (
-                <li key={index} className="rounded-md bg-slate-900/90 p-2">{concept}</li>
-              ))
+            {result.keyConcepts?.length ? (
+              result.keyConcepts.map((concept, index) => <li key={index} className="rounded-md bg-slate-900/90 p-2">{concept}</li>)
             ) : (
               <li className="text-slate-500">No concepts available.</li>
             )}
           </ul>
-        </div>
+        </section>
 
-        <div className="rounded-2xl border border-slate-800 bg-slate-950 p-4">
-          <h3 className="text-lg font-semibold text-cyan-200">Important Definitions</h3>
+        <section className="rounded-2xl border border-slate-800 bg-slate-950 p-4">
+          <h3 className="text-lg font-semibold text-cyan-200">Definitions</h3>
           <ul className="mt-3 space-y-2 text-slate-200">
-            {result.definitions.length > 0 ? (
-              result.definitions.map((definition, index) => (
-                <li key={index} className="rounded-md bg-slate-900/90 p-2">{definition}</li>
-              ))
+            {result.definitions?.length ? (
+              result.definitions.map((definition, index) => <li key={index} className="rounded-md bg-slate-900/90 p-2">{definition}</li>)
             ) : (
               <li className="text-slate-500">No definitions provided.</li>
             )}
           </ul>
-        </div>
+        </section>
+      </div>
 
-        <div className="rounded-2xl border border-slate-800 bg-slate-950 p-4">
-          <h3 className="text-lg font-semibold text-cyan-200">Revision Questions</h3>
-          <ol className="mt-3 space-y-2 text-slate-200 list-decimal list-inside">
-            {result.questions.length > 0 ? (
-              result.questions.map((question, index) => (
-                <li key={index} className="rounded-md bg-slate-900/90 p-2">{question}</li>
+      <section className="rounded-2xl border border-slate-800 bg-slate-950 p-4">
+        <h3 className="text-lg font-semibold text-cyan-200">Flashcards</h3>
+        <div className="mt-3 grid gap-3 md:grid-cols-2">
+          {result.flashcards?.length ? (
+            result.flashcards.map((card, index) => (
+              <div key={index} className="rounded-md bg-slate-900/90 p-3">
+                <p className="text-sm font-semibold text-slate-100">{card.front}</p>
+                <p className="mt-2 text-sm text-slate-300">{card.back}</p>
+              </div>
+            ))
+          ) : (
+            <p className="text-slate-500">No flashcards generated.</p>
+          )}
+        </div>
+      </section>
+
+      <section className="rounded-2xl border border-slate-800 bg-slate-950 p-4">
+        <h3 className="text-lg font-semibold text-cyan-200">MCQs</h3>
+        <div className="mt-3 space-y-3">
+          {mcqs.length ? (
+            mcqs.map((mcq, index) => (
+              <div key={index} className="rounded-md bg-slate-900/90 p-3 text-sm text-slate-200">
+                <p className="font-semibold">{index + 1}. {mcq.question}</p>
+                <div className="mt-2 grid gap-1 sm:grid-cols-2">
+                  {mcq.options.map((option, optionIndex) => (
+                    <span key={optionIndex} className="text-slate-400">{String.fromCharCode(65 + optionIndex)}. {option}</span>
+                  ))}
+                </div>
+                {mcq.correctAnswer && <p className="mt-2 text-cyan-200">Answer: {mcq.correctAnswer}</p>}
+              </div>
+            ))
+          ) : (
+            <p className="text-slate-500">No MCQs generated.</p>
+          )}
+        </div>
+      </section>
+
+      <div className="grid gap-4 lg:grid-cols-2">
+        <section className="rounded-2xl border border-slate-800 bg-slate-950 p-4">
+          <h3 className="text-lg font-semibold text-cyan-200">Short Questions</h3>
+          <div className="mt-3 space-y-2">
+            {shortQuestions.length ? (
+              shortQuestions.map((item, index) => (
+                <div key={index} className="rounded-md bg-slate-900/90 p-3 text-sm text-slate-200">
+                  <p>{item.question}</p>
+                  {item.answer && <p className="mt-2 text-slate-400">{item.answer}</p>}
+                </div>
               ))
             ) : (
-              <li className="text-slate-500">No questions generated.</li>
+              <p className="text-slate-500">No short questions generated.</p>
             )}
-          </ol>
-        </div>
+          </div>
+        </section>
+
+        <section className="rounded-2xl border border-slate-800 bg-slate-950 p-4">
+          <h3 className="text-lg font-semibold text-cyan-200">Long Questions</h3>
+          <div className="mt-3 space-y-2">
+            {longQuestions.length ? (
+              longQuestions.map((item, index) => (
+                <div key={index} className="rounded-md bg-slate-900/90 p-3 text-sm text-slate-200">
+                  <p>{item.question}</p>
+                  {item.answer && <p className="mt-2 whitespace-pre-wrap text-slate-400">{item.answer}</p>}
+                </div>
+              ))
+            ) : (
+              <p className="text-slate-500">No long questions generated.</p>
+            )}
+          </div>
+        </section>
       </div>
+
+      {result.questions?.length > 0 && !shortQuestions.length && !longQuestions.length && !mcqs.length && (
+        <section className="rounded-2xl border border-slate-800 bg-slate-950 p-4">
+          <h3 className="text-lg font-semibold text-cyan-200">Revision Questions</h3>
+          <div className="mt-3 space-y-2 text-slate-200">
+            {result.questions.map((question, index) => (
+              <div key={index} className="rounded-md bg-slate-900/90 p-3">
+                <div className="flex items-start gap-2">
+                  <span className={`rounded border px-2 py-0.5 text-xs font-medium ${getQuestionTypeColor(question.type)}`}>
+                    {question.type}
+                  </span>
+                  <p className="flex-1 text-sm">{question.question}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
     </div>
   );
 };

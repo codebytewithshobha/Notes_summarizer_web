@@ -1,8 +1,10 @@
+import { Suspense, lazy } from 'react';
 import { NavLink, Route, Routes } from 'react-router-dom';
 import Home from './pages/Home';
-import NotesPage from './pages/NotesPage';
-import ResultsPage from './pages/ResultsPage';
-import HistoryPage from './pages/HistoryPage';
+
+const NotesPage = lazy(() => import('./pages/NotesPage'));
+const ResultsPage = lazy(() => import('./pages/ResultsPage'));
+const HistoryPage = lazy(() => import('./pages/HistoryPage'));
 
 const activeLink = 'text-cyan-300';
 const inactiveLink = 'text-slate-300 hover:text-cyan-200';
@@ -30,12 +32,14 @@ function App() {
         </header>
 
         <main className="space-y-6">
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/summarize" element={<NotesPage />} />
-            <Route path="/results" element={<ResultsPage />} />
-            <Route path="/history" element={<HistoryPage />} />
-          </Routes>
+          <Suspense fallback={<div className="rounded-2xl border border-slate-800 bg-slate-900/80 p-6 text-slate-300">Loading page...</div>}>
+            <Routes>
+              <Route path="/" element={<Home />} />
+              <Route path="/summarize" element={<NotesPage />} />
+              <Route path="/results" element={<ResultsPage />} />
+              <Route path="/history" element={<HistoryPage />} />
+            </Routes>
+          </Suspense>
         </main>
       </div>
     </div>

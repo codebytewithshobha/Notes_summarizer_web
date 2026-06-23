@@ -2,7 +2,21 @@ const express = require('express');
 const multer = require('multer');
 const { createSummary } = require('../controllers/summarizeController');
 
-const upload = multer({ storage: multer.memoryStorage() });
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: {
+    fileSize: 10 * 1024 * 1024
+  },
+  fileFilter: (req, file, cb) => {
+    const allowedTypes = ['text/plain', 'application/pdf'];
+    if (allowedTypes.includes(file.mimetype)) {
+      cb(null, true);
+    } else {
+      cb(new Error('Invalid file type. Only TXT and PDF files are allowed.'), false);
+    }
+  }
+});
+
 const router = express.Router();
 
 router.post('/', upload.single('file'), createSummary);

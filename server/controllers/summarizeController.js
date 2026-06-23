@@ -1,5 +1,8 @@
 const NoteSummary = require('../models/NoteSummary');
 const { parseTextFromUpload, generateSummaryFromNotes } = require('../services/aiService');
+const cacheMiddleware = require('../middleware/cache');
+
+const MAX_NOTE_LENGTH = 500000;
 
 const createSummary = async (req, res, next) => {
   try {
@@ -11,16 +14,37 @@ const createSummary = async (req, res, next) => {
       return res.status(400).json({ message: 'Please provide notes text or upload a TXT/PDF file.' });
     }
 
-    const aiResult = await generateSummaryFromNotes(effectiveNotes);
+    if (effectiveNotes.trim().split(/\s+/).length < 10) {
+  return res.status(400).json({
+    message: "Please provide more detailed notes."
+  });
+}
+
+    if (effectiveNotes.length > MAX_NOTE_LENGTH) {
+      return res.status(413).json({ message: 'Notes are too large. Please keep input under 500,000 characters.' });
+    }
+
+    const uploadedFileName = req.file?.originalname || '';
+    const aiResult = await generateSummaryFromNotes(effectiveNotes, uploadedFileName);
 
     const savedRecord = await NoteSummary.create({
       originalNotes: effectiveNotes,
       summary: aiResult.summary,
       keyConcepts: aiResult.keyConcepts,
       definitions: aiResult.definitions,
-      questions: aiResult.questions
-    });
+      questions: aiResult.questions,
+      flashcards: aiResult.flashcards,
+      mcqs: aiResult.mcqs,
+      shortQuestions: aiResult.shortQuestions,
+      longQuestions: aiResult.longQuestions,
+      uploadedFileName: aiResult.uploadedFileName,
+      aiModelUsed: aiResult.aiModelUsed,
+      aiProvider: aiResult.aiProvider,
+      processingTime: aiResult.processingTime
+});
 
+
+    cacheMiddleware.clear('/api/history');
     res.status(201).json(savedRecord);
   } catch (error) {
     next(error);
