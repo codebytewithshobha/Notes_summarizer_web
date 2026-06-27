@@ -57,7 +57,7 @@ A production-grade full-stack application that transforms lecture notes into str
 - MongoDB with Mongoose
 - Multer for file uploads
 - PDF parsing with pdf-parse
-- Google Gemini AI API
+- Groq API
 
 ### DevOps
 - Docker & Docker Compose
@@ -69,7 +69,7 @@ A production-grade full-stack application that transforms lecture notes into str
 ### Prerequisites
 - Node.js 20+
 - MongoDB 7.0+
-- Google Gemini API Key
+- Groq API Key
 
 ### Installation
 
@@ -84,7 +84,7 @@ cd AI_Notes_Summarizer
 # Server
 cd server
 cp .env.example .env
-# Edit .env with your Groq
+# Edit .env with your Groq API KEY
 ```
 
 3. Install dependencies
@@ -146,7 +146,7 @@ The application will be available at:
 PORT=5000
 MONGODB_URI=mongodb://localhost:27017/ai-course-notes
 Groq_API_KEY=your_groq_api_key
-GEMINI_MODEL=gemini-2.5-flash
+GEMINI_MODEL=llama-3.3-70b-versatile
 NODE_ENV=production
 ```
 
