@@ -60,7 +60,7 @@ const mcqSchema = new mongoose.Schema({
   options: {
     type: [String],
     validate: {
-      validator: function(options) {
+      validator: function (options) {
         return options.length >= 2 && options.length <= 4;
       },
       message: 'MCQs must include 2 to 4 options'
@@ -76,6 +76,13 @@ const mcqSchema = new mongoose.Schema({
 
 const noteSummarySchema = new mongoose.Schema(
   {
+    // ✅ User who created this summary
+    userId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true
+    },
+
     originalNotes: {
       type: String,
       required: true,
@@ -83,6 +90,7 @@ const noteSummarySchema = new mongoose.Schema(
       minlength: 5,
       maxlength: 500000
     },
+
     summary: {
       type: String,
       required: true,
@@ -90,57 +98,67 @@ const noteSummarySchema = new mongoose.Schema(
       minlength: 1,
       maxlength: 100000
     },
+
     keyConcepts: {
       type: [String],
       default: [],
       validate: {
-        validator: function(v) {
+        validator: function (v) {
           return v.every(concept => typeof concept === 'string' && concept.trim().length > 0);
         },
         message: 'Key concepts must be non-empty strings'
       }
     },
+
     definitions: {
       type: [String],
       default: [],
       validate: {
-        validator: function(v) {
+        validator: function (v) {
           return v.every(def => typeof def === 'string' && def.trim().length > 0);
         },
         message: 'Definitions must be non-empty strings'
       }
     },
+
     questions: {
       type: [questionSchema],
       default: []
     },
+
     flashcards: {
       type: [flashcardSchema],
       default: []
     },
+
     mcqs: {
       type: [mcqSchema],
       default: []
     },
+
     shortQuestions: {
       type: [qaSchema],
       default: []
     },
+
     longQuestions: {
       type: [qaSchema],
       default: []
     },
+
     uploadedFileName: {
       type: String,
       default: '',
       trim: true,
       maxlength: 255
     },
+
     aiModelUsed: {
       type: String,
       default: 'gemini-2.5-flash',
       trim: true
     },
+
     processingTime: {
       type: Number,
       default: 0
@@ -151,11 +169,17 @@ const noteSummarySchema = new mongoose.Schema(
   }
 );
 
-noteSummarySchema.index({ createdAt: -1 });
+noteSummarySchema.index({ userId: 1, createdAt: -1 });
 noteSummarySchema.index({ uploadedFileName: 1 });
 noteSummarySchema.index({ aiModelUsed: 1 });
-noteSummarySchema.index({ summary: 'text', originalNotes: 'text', uploadedFileName: 'text' });
+noteSummarySchema.index({
+  summary: 'text',
+  originalNotes: 'text',
+  uploadedFileName: 'text'
+});
 
-const NoteSummary = mongoose.models.NoteSummary || mongoose.model('NoteSummary', noteSummarySchema);
+const NoteSummary =
+  mongoose.models.NoteSummary ||
+  mongoose.model('NoteSummary', noteSummarySchema);
 
 module.exports = NoteSummary;

@@ -5,30 +5,49 @@ import { useAuth } from '../context/AuthContext';
 export default function SignInPage() {
   const navigate = useNavigate();
   const { signIn, isLoading } = useAuth();
+
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+
+    console.log("🚀 SIGNIN FORM SUBMITTED"); // DEBUG 1
+
     setError('');
 
     try {
+      console.log("📡 CALLING SIGNIN...", { email, password }); // DEBUG 2
+
       await signIn(email, password);
+
+      console.log("✅ SIGNIN SUCCESS"); // DEBUG 3
+
       navigate('/');
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Sign in failed. Please try again.');
+    } catch (err: any) {
+      console.error("❌ SIGNIN ERROR:", err); // DEBUG 4
+
+      setError(
+        err?.message || 'Sign in failed. Please try again.'
+      );
     }
   };
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-[radial-gradient(circle_at_top,_rgba(14,165,233,0.18),_transparent_30%),_radial-gradient(circle_at_bottom_right,_rgba(56,189,248,0.18),_transparent_28%)] p-4">
       <div className="w-full max-w-md rounded-3xl border border-slate-800 bg-slate-950/80 p-8 shadow-2xl shadow-slate-950/20">
+
         <div className="mb-8 text-center">
-          <p className="text-sm font-semibold uppercase tracking-[0.24em] text-cyan-300/80">AI Study Toolkit</p>
-          <h1 className="mt-2 text-2xl font-semibold text-white">Sign In</h1>
+          <p className="text-sm font-semibold uppercase tracking-[0.24em] text-cyan-300/80">
+            AI Study Toolkit
+          </p>
+          <h1 className="mt-2 text-2xl font-semibold text-white">
+            Sign In
+          </h1>
         </div>
 
+        {/* ERROR BOX */}
         {error && (
           <div className="mb-4 rounded-lg border border-red-500/30 bg-red-500/10 p-3 text-sm text-red-300">
             {error}
@@ -36,8 +55,12 @@ export default function SignInPage() {
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
+
           <div>
-            <label className="block text-sm font-medium text-slate-300 mb-2">Email</label>
+            <label className="block text-sm font-medium text-slate-300 mb-2">
+              Email
+            </label>
+
             <input
               type="email"
               value={email}
@@ -49,7 +72,10 @@ export default function SignInPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-slate-300 mb-2">Password</label>
+            <label className="block text-sm font-medium text-slate-300 mb-2">
+              Password
+            </label>
+
             <input
               type="password"
               value={password}
@@ -71,7 +97,10 @@ export default function SignInPage() {
 
         <p className="mt-6 text-center text-sm text-slate-400">
           Don't have an account?{' '}
-          <Link to="/signup" className="text-cyan-300 hover:text-cyan-200 font-medium">
+          <Link
+            to="/signup"
+            className="text-cyan-300 hover:text-cyan-200 font-medium"
+          >
             Sign up
           </Link>
         </p>

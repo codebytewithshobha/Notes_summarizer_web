@@ -8,6 +8,19 @@ const api = axios.create({
   }
 });
 
+api.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem("token");
+
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
+
 export const getApiErrorMessage = (error: unknown, fallback = 'Something went wrong.') => {
   if (axios.isAxiosError(error)) {
     return error.response?.data?.message || error.response?.data?.error?.message || error.message || fallback;

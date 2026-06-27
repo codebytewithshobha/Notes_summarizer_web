@@ -1,176 +1,159 @@
-# AI Course Notes Summarizer
+📚 AI Notes Summarizer
 
-A production-grade full-stack application that transforms lecture notes into structured study materials using AI.
+An AI-powered web application that transforms lengthy study notes into concise summaries, key concepts, flashcards, MCQs, and practice questions. The application uses the Groq API (Llama 3.3 70B Versatile) for AI-powered content generation and provides secure user authentication with JWT and MongoDB.
 
-## Features
+---
 
-### Core Functionality
-- **AI-Powered Summarization**: Uses Google Gemini AI to generate comprehensive summaries
-- **Multiple Input Methods**: Paste text directly or upload TXT/PDF files
-- **Large Input Handling**: Automatically chunks large notes (3000-4000 chars) for parallel processing
-- **Advanced Question Generation**: Creates multiple question types:
-  - Short-answer questions
-  - Long-answer questions
-  - Multiple Choice Questions (MCQs)
-  - Conceptual questions
+🚀 Features
 
-### Data Management
-- **Structured Output**: Generates summaries with:
-  - Key concepts
-  - Important definitions
-  - Revision questions with answers
-  - Processing metadata (time, model used, source file)
-- **Advanced History Dashboard**:
-  - Search functionality
-  - Sort by date, processing time
-  - Filter by date range
-  - Pagination
-  - Delete entries
-  - Detailed view of past summaries
+- 🔐 User Authentication (Sign Up & Sign In)
+- 🔑 JWT-based Authorization
+- 📝 AI-powered Notes Summarization
+- 📂 Upload TXT and PDF files
+- 💡 Key Concepts Extraction
+- 📖 Important Definitions
+- 🎴 AI-generated Flashcards
+- ❓ Short & Long Answer Questions
+- ✅ Multiple Choice Questions (MCQs)
+- 📜 Personal History for Each User
+- 🔍 Search & Filter Previous Summaries
+- 📤 Export Summaries as PDF, DOCX, and TXT
+- 📱 Responsive Modern UI
 
-### Performance & Security
-- **Rate Limiting**: 100 requests per 15 minutes per IP
-- **Input Sanitization**: Automatic XSS protection
-- **Request Caching**: 60-second cache for history endpoints
-- **Helmet.js**: Security headers for HTTP protection
-- **Timeout Handling**: 60-second timeout for AI API calls
-- **File Validation**: 10MB limit, TXT/PDF only, corrupted file detection
+---
 
-### User Experience
-- **Responsive Design**: Mobile-optimized interface
-- **Loading Skeletons**: Smooth loading states
-- **Progress Indicators**: Real-time upload progress
-- **Error Handling**: Comprehensive error messages
-- **PDF Download**: Export summaries with all sections and metadata
+🛠️ Tech Stack
 
-## Tech Stack
+Frontend
 
-### Frontend
-- React 18 with TypeScript
-- TailwindCSS for styling
-- React Router for navigation
-- Axios for API calls
-- Vite for build tooling
+- React.js
+- TypeScript
+- Tailwind CSS
+- Axios
+- React Router
 
-### Backend
-- Express.js with Node.js
-- MongoDB with Mongoose
-- Multer for file uploads
-- PDF parsing with pdf-parse
-- Google Gemini AI API
+Backend
 
-### DevOps
-- Docker & Docker Compose
-- Environment configuration
-- Production-ready architecture
+- Node.js
+- Express.js
+- MongoDB
+- Mongoose
+- JWT Authentication
+- Multer
 
-## Getting Started
+AI
 
-### Prerequisites
-- Node.js 20+
-- MongoDB 7.0+
-- Google Gemini API Key
+- Groq API
+- Llama 3.3 70B Versatile
 
-### Installation
+---
 
-1. Clone the repository
-```bash
-git clone <repository-url>
-cd AI_Notes_Summarizer
-```
+📂 Project Structure
 
-2. Set up environment variables
-```bash
-# Server
-cd server
-cp .env.example .env
-# Edit .env with your Groq
-```
-
-3. Install dependencies
-```bash
-# Server
-cd server
-npm install
-
-# Client
-cd ../client
-npm install
-```
-
-4. Start MongoDB
-```bash
-# Using Docker
-docker-compose up -d mongo
-
-# Or local MongoDB
-mongod
-```
-
-5. Run the application
-```bash
-# Server
-cd server
-npm run dev
-
-# Client (new terminal)
-cd client
-npm run dev
-```
-
-### Docker Deployment
-
-```bash
-docker-compose up -d
-```
-
-The application will be available at:
-- Frontend: http://localhost:3000
-- Backend API: http://localhost:5000
-- MongoDB: localhost:27017
-
-## API Endpoints
-
-### Summarization
-- `POST /api/summarize` - Generate summary from notes or file upload
-
-### History
-- `GET /api/history` - Get paginated history with search, sort, and filters
-- `GET /api/history/:id` - Get specific history entry
-- `DELETE /api/history/:id` - Delete history entry
-
-## Environment Variables
-
-### Server (.env)
-```
-PORT=5000
-MONGODB_URI=mongodb://localhost:27017/ai-course-notes
-Groq_API_KEY=your_groq_api_key
-GEMINI_MODEL=gemini-2.5-flash
-NODE_ENV=production
-```
-
-## Project Structure
-
-```
 AI_Notes_Summarizer/
+│
 ├── client/
 │   ├── src/
-│   │   ├── components/    # React components
-│   │   ├── pages/         # Page components
-│   │   ├── services/      # API service layer
-│   │   └── types/         # TypeScript types
-│   └── package.json
+│   ├── components/
+│   ├── pages/
+│   ├── context/
+│   └── services/
+│
 ├── server/
-│   ├── config/           # Database configuration
-│   ├── controllers/      # Route controllers
-│   ├── middleware/       # Custom middleware
-│   ├── models/           # Mongoose models
-│   ├── routes/           # API routes
-│   └── services/         # Business logic
-└── docker-compose.yml
-```
+│   ├── controllers/
+│   ├── models/
+│   ├── middleware/
+│   ├── routes/
+│   ├── services/
+│   └── server.js
+│
+└── README.md
 
-## License
+---
 
-MIT
+⚙️ Installation
+
+Clone Repository
+
+git clone https://github.com/your-username/AI_Notes_Summarizer.git
+
+Install Dependencies
+
+Frontend
+
+cd client
+npm install
+
+Backend
+
+cd server
+npm install
+
+---
+
+Environment Variables
+
+Create a ".env" file inside the "server" folder.
+
+PORT=5000
+MONGODB_URI=your_mongodb_connection_string
+JWT_SECRET=your_secret_key
+GROQ_API_KEY=your_groq_api_key
+
+---
+
+Run the Project
+
+Backend
+
+cd server
+npm run dev
+
+Frontend
+
+cd client
+npm run dev
+
+---
+
+API Endpoints
+
+Authentication
+
+- POST "/api/auth/signup"
+- POST "/api/auth/signin"
+
+Notes
+
+- POST "/api/summarize"
+
+History
+
+- GET "/api/history"
+- GET "/api/history/:id"
+- DELETE "/api/history/:id"
+- GET "/api/history/:id/export/pdf"
+- GET "/api/history/:id/export/docx"
+- GET "/api/history/:id/export/txt"
+
+---
+
+Future Enhancements
+
+- Google Authentication
+- Notes Sharing
+- AI Chat Assistant
+- Voice Input
+- OCR Support
+- Multi-language Summaries
+- Study Progress Dashboard
+
+---
+
+Author
+
+Shobha Kumari
+
+B.Tech (Computer Science & Engineering)
+
+Aspiring Software Developer | MERN Stack | AI Enthusiast

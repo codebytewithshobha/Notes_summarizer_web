@@ -27,7 +27,9 @@ const getHistory = async (req, res, next) => {
     const pageSize = parsePositiveInteger(req.query.limit, 10, 50);
     const sortValue = allowedSorts.has(sort) ? sort : '-createdAt';
 
-    const query = {};
+    const query = {
+      userId: req.user._id
+    };
 
     if (search) {
       const safeSearch = escapeRegex(String(search).slice(0, 100));

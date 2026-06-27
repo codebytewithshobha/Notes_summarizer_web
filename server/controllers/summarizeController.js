@@ -27,7 +27,12 @@ const createSummary = async (req, res, next) => {
     const uploadedFileName = req.file?.originalname || '';
     const aiResult = await generateSummaryFromNotes(effectiveNotes, uploadedFileName);
 
+    console.log("req.user:", req.user);
+    console.log("req.body:", req.body);
+    console.log("effectiveNotes:", effectiveNotes);
+
     const savedRecord = await NoteSummary.create({
+      userId: req.user._id,
       originalNotes: effectiveNotes,
       summary: aiResult.summary,
       keyConcepts: aiResult.keyConcepts,

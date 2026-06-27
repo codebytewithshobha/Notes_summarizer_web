@@ -20,63 +20,80 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
+  // 🔄 restore session
   useEffect(() => {
     const storedUser = localStorage.getItem('user');
-    if (storedUser) {
+    const token = localStorage.getItem('token');
+
+    if (storedUser && token) {
       try {
         setUser(JSON.parse(storedUser));
       } catch {
         localStorage.removeItem('user');
+        localStorage.removeItem('token');
       }
     }
+
     setIsLoading(false);
   }, []);
 
+  // 🆕 SIGN UP
   const signUp = async (email: string, password: string, name: string) => {
     setIsLoading(true);
     try {
-      const response = await fetch('/api/auth/signup', {
+      const response = await fetch('http://localhost:5000/api/auth/signup', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password, name }),
       });
 
+      const data = await response.json();
+
       if (!response.ok) {
-        throw new Error('Sign up failed');
+        throw new Error(data.message || 'Sign up failed');
       }
 
-      const data = await response.json();
+      // ✅ STORE TOKEN + USER
       setUser(data.user);
       localStorage.setItem('user', JSON.stringify(data.user));
+      localStorage.setItem('token', data.token);
+
     } finally {
       setIsLoading(false);
     }
   };
 
+  // 🔐 SIGN IN
   const signIn = async (email: string, password: string) => {
     setIsLoading(true);
     try {
-      const response = await fetch('/api/auth/signin', {
+      const response = await fetch('http://localhost:5000/api/auth/signin', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),
       });
 
+      const data = await response.json();
+
       if (!response.ok) {
-        throw new Error('Sign in failed');
+        throw new Error(data.message || 'Sign in failed');
       }
 
-      const data = await response.json();
+      // ✅ CRITICAL FIX: STORE TOKEN
       setUser(data.user);
       localStorage.setItem('user', JSON.stringify(data.user));
+      localStorage.setItem('token', data.token);
+
     } finally {
       setIsLoading(false);
     }
   };
 
+  // 🚪 SIGN OUT
   const signOut = () => {
     setUser(null);
     localStorage.removeItem('user');
+    localStorage.removeItem('token');
   };
 
   return (
