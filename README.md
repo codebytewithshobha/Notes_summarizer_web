@@ -147,6 +147,25 @@ Future Enhancements
 - OCR Support
 - Multi-language Summaries
 - Study Progress Dashboard
+## 🐳 Docker Support
+
+### Run using Docker
+
+```bash
+docker compose up --build
+```
+
+This starts:
+
+- React Frontend
+- Node.js Backend
+- MongoDB
+
+### Stop Containers
+
+```bash
+docker compose down
+```
 
 ---
 

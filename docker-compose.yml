@@ -1,25 +1,28 @@
-version: '3.8'
+version: "3.8"
 
 services:
   mongo:
     image: mongo:7.0
+    container_name: ai_notes_mongodb
     restart: unless-stopped
+    ports:
+      - "27017:27017"
     volumes:
       - mongo_data:/data/db
-    ports:
-      - '27017:27017'
 
   server:
     build:
       context: ./server
       dockerfile: Dockerfile
+    container_name: ai_notes_backend
+    restart: unless-stopped
+    env_file:
+      - ./server/.env
     environment:
       - PORT=5000
       - MONGODB_URI=mongodb://mongo:27017/ai-course-notes
-      - Groq_API_KEY=${Groq_API_KEY}
-      - Groq_MODEL=${Groq_MODEL:-gemini-2.5-flash}
     ports:
-      - '5000:5000'
+      - "5000:5000"
     depends_on:
       - mongo
 
@@ -27,8 +30,10 @@ services:
     build:
       context: ./client
       dockerfile: Dockerfile
+    container_name: ai_notes_frontend
+    restart: unless-stopped
     ports:
-      - '3000:80'
+      - "3000:80"
     depends_on:
       - server
 
