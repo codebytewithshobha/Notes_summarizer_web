@@ -14,12 +14,12 @@ const OUTPUT_SCHEMA = {
 const Groq = require("groq-sdk");
 
 const getGroqConfig = () => {
-  const apiKey = process.env.GROQ_API_KEY;
-  const model = process.env.GROQ_MODEL || "llama-3.3-70b-versatile";
+  const apiKey = process.env.Groq_API_KEY;
+  const model = process.env.Groq_MODEL || "llama-3.3-70b-versatile";
 
   if (!apiKey) {
     throw new Error(
-      "GROQ_API_KEY environment variable is not set."
+      "Groq_API_KEY environment variable is not set."
     );
   }
 

@@ -1,6 +1,6 @@
-import { FaEye, FaEyeSlash } from 'react-icons/fa';
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { FaEye, FaEyeSlash } from 'react-icons/fa';
 import { useAuth } from '../context/AuthContext';
 
 export default function SignInPage() {
@@ -10,27 +10,25 @@ export default function SignInPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
-
   const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    console.log("🚀 SIGNIN FORM SUBMITTED"); // DEBUG 1
+    console.log("🚀 SIGNIN FORM SUBMITTED");
 
     setError('');
 
     try {
-      console.log("📡 CALLING SIGNIN...", { email, password }); // DEBUG 2
+      console.log("📡 CALLING SIGNIN...", { email, password });
 
       await signIn(email, password);
 
-      console.log("✅ SIGNIN SUCCESS"); // DEBUG 3
+      console.log("✅ SIGNIN SUCCESS");
 
       navigate('/');
     } catch (err: any) {
-      console.error("❌ SIGNIN ERROR:", err); // DEBUG 4
+      console.error("❌ SIGNIN ERROR:", err);
 
       setError(
         err?.message || 'Sign in failed. Please try again.'
@@ -51,7 +49,6 @@ export default function SignInPage() {
           </h1>
         </div>
 
-        {/* ERROR BOX */}
         {error && (
           <div className="mb-4 rounded-lg border border-red-500/30 bg-red-500/10 p-3 text-sm text-red-300">
             {error}
@@ -81,23 +78,23 @@ export default function SignInPage() {
             </label>
 
             <div className="relative">
-  <input
-    type={showPassword ? "text" : "password"}
-    value={password}
-    onChange={(e) => setPassword(e.target.value)}
-    required
-    className="w-full rounded-lg border border-slate-700 bg-slate-900/50 px-4 py-2 pr-10 text-white placeholder-slate-500 focus:border-cyan-400 focus:outline-none focus:ring-1 focus:ring-cyan-400"
-    placeholder="••••••••"
-  />
+              <input
+                type={showPassword ? "text" : "password"}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                className="w-full rounded-lg border border-slate-700 bg-slate-900/50 px-4 py-2 pr-10 text-white placeholder-slate-500 focus:border-cyan-400 focus:outline-none focus:ring-1 focus:ring-cyan-400"
+                placeholder="••••••••"
+              />
 
-  <span
-    onClick={() => setShowPassword(!showPassword)}
-    className="absolute right-3 top-1/2 -translate-y-1/2 cursor-pointer text-slate-400 hover:text-cyan-300"
-  >
-    {showPassword ? <FaEyeSlash /> : <FaEye />}
-  </span>
-</div>
-            
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-cyan-300"
+              >
+                {showPassword ? <FaEyeSlash size={18} /> : <FaEye size={18} />}
+              </button>
+            </div>
           </div>
 
           <button
