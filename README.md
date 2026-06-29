@@ -1,176 +1,324 @@
-# AI Course Notes Summarizer
+# 🚀 AI Course Notes Summarizer
 
-A production-grade full-stack application that transforms lecture notes into structured study materials using AI.
+A full-stack AI-powered study assistant that transforms lecture notes into concise summaries, flashcards, quizzes, and revision material using **Groq LLM**. Built with the **MERN Stack**, secured using **JWT Authentication**, containerized with **Docker**, and deployed on **Vercel** and **Render**.
 
-## Features
+---
 
-### Core Functionality
-- **AI-Powered Summarization**: Uses Google Gemini AI to generate comprehensive summaries
-- **Multiple Input Methods**: Paste text directly or upload TXT/PDF files
-- **Large Input Handling**: Automatically chunks large notes (3000-4000 chars) for parallel processing
-- **Advanced Question Generation**: Creates multiple question types:
-  - Short-answer questions
-  - Long-answer questions
-  - Multiple Choice Questions (MCQs)
-  - Conceptual questions
+## 🌐 Live Demo
 
-### Data Management
-- **Structured Output**: Generates summaries with:
-  - Key concepts
-  - Important definitions
-  - Revision questions with answers
-  - Processing metadata (time, model used, source file)
-- **Advanced History Dashboard**:
-  - Search functionality
-  - Sort by date, processing time
-  - Filter by date range
-  - Pagination
-  - Delete entries
-  - Detailed view of past summaries
+**Frontend:** https://notessummarizerweb1-epion2c52-codebytewithshobhas-projects.vercel.app/
 
-### Performance & Security
-- **Rate Limiting**: 100 requests per 15 minutes per IP
-- **Input Sanitization**: Automatic XSS protection
-- **Request Caching**: 60-second cache for history endpoints
-- **Helmet.js**: Security headers for HTTP protection
-- **Timeout Handling**: 60-second timeout for AI API calls
-- **File Validation**: 10MB limit, TXT/PDF only, corrupted file detection
+**Backend API:** https://notes-summarizer-web.onrender.com/
 
-### User Experience
-- **Responsive Design**: Mobile-optimized interface
-- **Loading Skeletons**: Smooth loading states
-- **Progress Indicators**: Real-time upload progress
-- **Error Handling**: Comprehensive error messages
-- **PDF Download**: Export summaries with all sections and metadata
+**Github repository URL ** https://github.com/codebytewithshobha/Notes_summarizer_web
+---
 
-## Tech Stack
+# ✨ Features
+
+## 🤖 AI-Powered Learning
+
+* AI-generated notes summary using Groq LLM
+* Key concepts extraction
+* Important definitions
+* Flashcards for revision
+* Multiple Choice Questions (MCQs)
+* Short-answer questions
+* Long-answer questions
+* Context-aware study material generation
+
+---
+
+## 📄 Notes Upload
+
+* Paste notes directly
+* Upload TXT files
+* Upload PDF files
+* Automatic PDF text extraction
+* Supports large documents through intelligent chunking
+
+---
+
+## 👤 Authentication
+
+* User Signup
+* User Login
+* JWT Authentication
+* Protected Routes
+* Secure Password Hashing
+
+---
+
+## 📚 Dashboard
+
+* Upload notes
+* AI Summary Generation
+* Flashcards
+* Quiz Section
+* Revision Questions
+* Recent Notes History
+* Delete Notes
+* Export Notes
+
+---
+
+## ⚡ Performance & Security
+
+* Helmet Security
+* Rate Limiting
+* Input Sanitization
+* Request Validation
+* MongoDB Storage
+* Error Handling
+* Cached History APIs
+
+---
+
+## 🛠 Tech Stack
 
 ### Frontend
-- React 18 with TypeScript
-- TailwindCSS for styling
-- React Router for navigation
-- Axios for API calls
-- Vite for build tooling
+
+* React
+* Vite
+* Tailwind CSS
+* React Router
+* Axios
 
 ### Backend
-- Express.js with Node.js
-- MongoDB with Mongoose
-- Multer for file uploads
-- PDF parsing with pdf-parse
-- Groq API
+
+* Node.js
+* Express.js
+* MongoDB Atlas
+* Mongoose
+* JWT
+* Multer
+* pdf-parse
+* Groq API
 
 ### DevOps
-- Docker & Docker Compose
-- Environment configuration
-- Production-ready architecture
 
-## Getting Started
+* Docker
+* Docker Compose
+* Vercel
+* Render
+* GitHub
 
-### Prerequisites
-- Node.js 20+
-- MongoDB 7.0+
-- Groq API Key
+---
 
-### Installation
+# 🏗 Architecture
 
-1. Clone the repository
+Frontend (React + Vite)
+
+⬇ REST API
+
+Backend (Express + Node.js)
+
+⬇
+
+MongoDB Atlas
+
+⬇
+
+Groq AI API
+
+---
+
+# 📂 Project Structure
+
+```text
+AI_Notes_Summarizer/
+
+├── client/
+│   ├── src/
+│   ├── public/
+│   └── package.json
+│
+├── server/
+│   ├── config/
+│   ├── controllers/
+│   ├── middleware/
+│   ├── models/
+│   ├── routes/
+│   ├── services/
+│   ├── server.js
+│   └── package.json
+│
+├── docker-compose.yml
+├── README.md
+└── .gitignore
+```
+
+---
+
+# ⚙ Installation
+
+## Clone Repository
+
 ```bash
-git clone <repository-url>
+git clone https://github.com/yourusername/AI_Notes_Summarizer.git
+
 cd AI_Notes_Summarizer
 ```
 
-2. Set up environment variables
-```bash
-# Server
-cd server
-cp .env.example .env
-# Edit .env with your Groq API KEY
-```
+---
 
-3. Install dependencies
-```bash
-# Server
-cd server
-npm install
+## Backend
 
-# Client
-cd ../client
+```bash
+cd server
+
 npm install
 ```
 
-4. Start MongoDB
-```bash
-# Using Docker
-docker-compose up -d mongo
+Create **.env**
 
-# Or local MongoDB
-mongod
-```
-
-5. Run the application
-```bash
-# Server
-cd server
-npm run dev
-
-# Client (new terminal)
-cd client
-npm run dev
-```
-
-### Docker Deployment
-
-```bash
-docker-compose up -d
-```
-
-The application will be available at:
-- Frontend: http://localhost:3000
-- Backend API: http://localhost:5000
-- MongoDB: localhost:27017
-
-## API Endpoints
-
-### Summarization
-- `POST /api/summarize` - Generate summary from notes or file upload
-
-### History
-- `GET /api/history` - Get paginated history with search, sort, and filters
-- `GET /api/history/:id` - Get specific history entry
-- `DELETE /api/history/:id` - Delete history entry
-
-## Environment Variables
-
-### Server (.env)
-```
+```env
 PORT=5000
-MONGODB_URI=mongodb://localhost:27017/ai-course-notes
-Groq_API_KEY=your_groq_api_key
-Groq_MODEL=llama-3.3-70b-versatile
-NODE_ENV=production
+
+MONGODB_URI=your_mongodb_connection
+
+GROQ_API_KEY=your_groq_api_key
+
+GROQ_MODEL=llama-3.3-70b-versatile
+
+JWT_SECRET=your_secret
 ```
 
-## Project Structure
+Run
 
-```
-AI_Notes_Summarizer/
-├── client/
-│   ├── src/
-│   │   ├── components/    # React components
-│   │   ├── pages/         # Page components
-│   │   ├── services/      # API service layer
-│   │   └── types/         # TypeScript types
-│   └── package.json
-├── server/
-│   ├── config/           # Database configuration
-│   ├── controllers/      # Route controllers
-│   ├── middleware/       # Custom middleware
-│   ├── models/           # Mongoose models
-│   ├── routes/           # API routes
-│   └── services/         # Business logic
-└── docker-compose.yml
+```bash
+npm run dev
 ```
 
-## License
+---
 
-MIT
+## Frontend
+
+```bash
+cd client
+
+npm install
+
+npm run dev
+```
+
+---
+
+# 🐳 Docker
+
+Build containers
+
+```bash
+docker compose build
+```
+
+Run containers
+
+```bash
+docker compose up -d
+```
+
+Stop containers
+
+```bash
+docker compose down
+```
+
+---
+
+# ☁ Deployment
+
+## Frontend
+
+* Vercel
+
+## Backend
+
+* Render
+
+## Database
+
+* MongoDB Atlas
+
+---
+
+# 📡 API Endpoints
+
+## Authentication
+
+POST /api/auth/signup
+
+POST /api/auth/login
+
+---
+
+## Notes
+
+POST /api/summarize
+
+---
+
+## History
+
+GET /api/history
+
+GET /api/history/:id
+
+DELETE /api/history/:id
+
+---
+
+# 🔐 Environment Variables
+
+```env
+PORT=5000
+
+MONGODB_URI=your_mongodb_connection
+
+GROQ_API_KEY=your_api_key
+
+GROQ_MODEL=llama-3.3-70b-versatile
+
+JWT_SECRET=your_secret
+```
+
+---
+
+# 📸 Screenshots
+
+* Home Page
+* Login Page
+* Dashboard
+* AI Summary
+* Flashcards
+* MCQs
+* History
+* Docker Containers
+
+(Add screenshots here.)
+
+---
+
+# 🚀 Future Enhancements
+
+* AI Tutor Chat
+* Daily Revision Emails using n8n
+* Weekly Study Reports
+* OCR Support
+* Voice Notes
+* Study Analytics Dashboard
+
+---
+
+# 📄 License
+
+MIT License
+
+---
+
+# 👨‍💻 Developed By
+
+**Shobha Kumar**
+
+B.Tech CSE Student
+
+Full Stack MERN Developer
