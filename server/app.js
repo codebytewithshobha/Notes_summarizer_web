@@ -18,18 +18,20 @@ const app = express();
 
 app.use(helmet());
 
-// ✅ TEMPORARY FIX FOR DEPLOYMENT STABILITY
-app.use(cors({
-  origin: [
-    "http://localhost:5173",
-    "https://notessummarizerweb1.vercel.app",
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"]
-}));
+// CORS Configuration
+app.use(
+  cors({
+    origin: [
+      'http://localhost:5173',
+      'https://notessummarizerweb1.vercel.app',
+    ],
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    credentials: true,
+  })
+);
 
-app.options("*", cors());
-
-// ⚠️ TEMPORARILY DISABLE RATE LIMITER (IMPORTANT FOR LOGIN DEBUGGING)
+// Uncomment after debugging if you want rate limiting
 // app.use(rateLimiter);
 
 app.use(express.json({ limit: '10mb' }));
@@ -37,22 +39,26 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 app.use(sanitizer);
 
-// routes
+// Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/history', cacheMiddleware(60), historyRoutes);
 app.use('/api/summarize', summarizeRoutes);
 
-// health check
+// Health check
 app.get('/', (req, res) => {
-  res.json({ message: 'AI Course Notes Summarizer API is running.' });
+  res.json({
+    message: 'AI Course Notes Summarizer API is running.',
+  });
 });
 
-// 404 handler
+// 404
 app.use((req, res) => {
-  res.status(404).json({ message: 'Route not found.' });
+  res.status(404).json({
+    message: 'Route not found.',
+  });
 });
 
-// error handler
+// Error Handler
 app.use(errorHandler);
 
 module.exports = app;
