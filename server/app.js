@@ -20,7 +20,9 @@ app.use(helmet());
 
 // ✅ TEMPORARY FIX FOR DEPLOYMENT STABILITY
 app.use(cors({
-  origin: "https://notessummarizerweb1.vercel.app",
+  origin: [
+    "http://localhost:5173",
+    "https://notessummarizerweb1.vercel.app",
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"]
 }));
