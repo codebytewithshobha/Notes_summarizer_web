@@ -20,8 +20,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
+  // ✅ Backend URL from environment
   const BASE_URL = import.meta.env.VITE_BACKEND_URL;
 
+  // 🔄 Restore session on reload
   useEffect(() => {
     const storedUser = localStorage.getItem('user');
     const token = localStorage.getItem('token');
@@ -29,7 +31,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (storedUser && token) {
       try {
         setUser(JSON.parse(storedUser));
-      } catch {
+      } catch (err) {
         localStorage.removeItem('user');
         localStorage.removeItem('token');
       }
@@ -38,9 +40,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setIsLoading(false);
   }, []);
 
-  // SIGN UP
+  // 🆕 SIGN UP
   const signUp = async (email: string, password: string, name: string) => {
     setIsLoading(true);
+
     try {
       const response = await fetch(`${BASE_URL}/api/auth/signup`, {
         method: 'POST',
@@ -57,18 +60,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setUser(data.user);
       localStorage.setItem('user', JSON.stringify(data.user));
       localStorage.setItem('token', data.token);
-
     } catch (err) {
-      console.error("Signup error:", err);
+      console.error('Signup error:', err);
       throw err;
     } finally {
       setIsLoading(false);
     }
   };
 
-  // SIGN IN
+  // 🔐 SIGN IN
   const signIn = async (email: string, password: string) => {
     setIsLoading(true);
+
     try {
       const response = await fetch(`${BASE_URL}/api/auth/signin`, {
         method: 'POST',
@@ -85,16 +88,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setUser(data.user);
       localStorage.setItem('user', JSON.stringify(data.user));
       localStorage.setItem('token', data.token);
-
     } catch (err) {
-      console.error("Signin error:", err);
+      console.error('Signin error:', err);
       throw err;
     } finally {
       setIsLoading(false);
     }
   };
 
-  // SIGN OUT
+  // 🚪 SIGN OUT
   const signOut = () => {
     setUser(null);
     localStorage.removeItem('user');
@@ -110,8 +112,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
+
   if (!context) {
     throw new Error('useAuth must be used within AuthProvider');
   }
+
   return context;
 };
